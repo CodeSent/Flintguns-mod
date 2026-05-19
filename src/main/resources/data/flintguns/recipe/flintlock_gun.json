@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " AB",
+    "XX ",
+    " ##"
+  ],
+  "key": {
+    "X": "minecraft:iron_ingot",
+    "#": "#minecraft:planks",
+    "B": "minecraft:tripwire_hook",
+    "A": "minecraft:flint"
+  },
+  "result": {
+    "count": 1,
+    "id": "flintguns:flintlock_gun"
+  }
+}

@@ -4,9 +4,8 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
-import net.codesent.flintguns.features.items;
 import net.codesent.flintguns.features.creativemodeTab;
-import net.minecraft.references.Items;
+import net.codesent.flintguns.features.items;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -15,7 +14,6 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.minecraft.world.item.CreativeModeTabs;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(FlintGuns.MODID)
