@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
@@ -49,9 +50,11 @@ enum gunState {
 
 public class flintlock extends Item {
 
-    public flintlock(Properties properties) {
+    public flintlock(Item.Properties properties) {
 
-        super(properties.durability(20));
+        super(properties);
+        //properties = properties.durability(1);
+
     }
 
     //private gunState currentState = gunState.UNLOADED;
@@ -82,6 +85,7 @@ public class flintlock extends Item {
         return currentUsage;
     }
     //Player cPlayer;
+
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
@@ -163,8 +167,8 @@ public class flintlock extends Item {
 
                             // Add the bullet to the world tick system
                             serverLevel.addFreshEntity(bullet);
-                            mainHandStack.hurtAndBreak(1,player,InteractionHand.MAIN_HAND);
-
+                           // mainHandStack.hurtAndBreak(100,player, InteractionHand.MAIN_HAND);
+                            mainHandStack.hurtAndBreak(1,player,player.getEquipmentSlotForItem(mainHandStack));
 
                         }
 
