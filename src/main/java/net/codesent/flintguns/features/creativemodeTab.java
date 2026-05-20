@@ -16,7 +16,7 @@ public class creativemodeTab {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TAB =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlintGuns.MODID);
 
-    public static final Supplier<CreativeModeTab> FLINTGUNS_GUNS_TAB = CREATIVE_MODE_TAB.register("bismuth_items_tab",
+    public static final Supplier<CreativeModeTab> FLINTGUNS_GUNS_TAB = CREATIVE_MODE_TAB.register("flintguns_creativetab",
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(items.FlintlockItem .get()))
                     .title(Component.translatable("creativetab.FlintGuns.Guns"))
                     .displayItems((itemDisplayParameters, output) -> {

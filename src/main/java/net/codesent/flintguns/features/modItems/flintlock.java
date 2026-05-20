@@ -1,6 +1,10 @@
 package net.codesent.flintguns.features.modItems;
 
-import ca.weblite.objc.Message;
+import net.codesent.flintguns.features.Entities.Projectilies.Bullet.BulletEntity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
@@ -9,14 +13,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.nbt.CompoundTag;
+import net.codesent.flintguns.features.items;
 
 import java.util.Optional;
 
-enum  gunState {
+enum gunState {
     UNLOADED(0),
     GUNPOWDER_LOADED(1),
     BULLET_LOADED(2),
@@ -46,18 +50,21 @@ enum  gunState {
 public class flintlock extends Item {
 
     public flintlock(Properties properties) {
-        super(properties);
+
+        super(properties.durability(20));
     }
+
     //private gunState currentState = gunState.UNLOADED;
     private final Item proplent = Items.GUNPOWDER;
     private final Item bullet = Items.IRON_NUGGET;
 
     private void writeItemData(ItemStack target, String data, gunState value) {
         target.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, CustomData ->
-                CustomData.update(compoundTag -> compoundTag.putInt(data,value.getId()))
+                CustomData.update(compoundTag -> compoundTag.putInt(data, value.getId()))
         );
-       //cPlayer.displayClientMessage(Component.literal("set Data:"+ data+ ", value:"+value.name()),false);
+        //cPlayer.displayClientMessage(Component.literal("set Data:"+ data+ ", value:"+value.name()),false);
     }
+
     private gunState readItemData(ItemStack target, String dataName) {
         CustomData data = target.get(DataComponents.CUSTOM_DATA);
         //data.copyTag()
@@ -72,7 +79,7 @@ public class flintlock extends Item {
             }
         }
         //cPlayer.displayClientMessage(Component.literal("read Data:"+ dataName + ", value:"+currentUsage.name()),false);
-        return  currentUsage;
+        return currentUsage;
     }
     //Player cPlayer;
 
@@ -87,51 +94,93 @@ public class flintlock extends Item {
             ItemStack itemstack = player.getOffhandItem();
             String Message = "";
             if (!level.isClientSide()) {
-                switch (readItemData(mainHandStack,"gun_State")) {
+                switch (readItemData(mainHandStack, "gun_State")) {
                     case UNLOADED:
                         Message = "load the Gun with Gunpowder (put the item in offhand.)";
-                        if (!itemstack.isEmpty()&&itemstack.getItem() == proplent) {
-                            Message = "Gunpowder loaded";
-                            writeItemData(mainHandStack,"gun_State",gunState.GUNPOWDER_LOADED);
-                            itemstack.shrink(1);
-                            player.containerMenu.broadcastChanges();
-                            player.displayClientMessage(Component.literal(Message),true);
-                            //player.sendSystemMessage();
+                        if (!itemstack.isEmpty() && itemstack.getItem() == proplent) {
+                            writeItemData(mainHandStack, "gun_State", gunState.GUNPOWDER_LOADED);
+                            if (!level.isClientSide()) {
+                                Message = "Gunpowder loaded";
+
+                                itemstack.shrink(1);
+                                player.containerMenu.broadcastChanges();
+                                player.displayClientMessage(Component.literal(Message), true);
+                                //player.sendSystemMessage();
+                            }
                             return InteractionResult.SUCCESS;
                         }
                         break;
                     case GUNPOWDER_LOADED:
+
                         Message = "load the Gun with a Iron Nugget (put the item in offhand)";
-                        if (!itemstack.isEmpty()&&itemstack.getItem() == bullet) {
-                            Message = "Bullet loaded";
-                            writeItemData(mainHandStack,"gun_State",gunState.BULLET_LOADED);
-                            itemstack.shrink(1);
-                            player.containerMenu.broadcastChanges();
-                            player.displayClientMessage(Component.literal(Message),true);
+                        if (!itemstack.isEmpty() && itemstack.getItem() == bullet) {
+                            writeItemData(mainHandStack, "gun_State", gunState.BULLET_LOADED);
+                            if (!level.isClientSide()) {
+                                Message = "Bullet loaded";
+
+                                itemstack.shrink(1);
+                                player.containerMenu.broadcastChanges();
+                                player.displayClientMessage(Component.literal(Message), true);
+
+                            }
                             return InteractionResult.SUCCESS;
-                        };
+                        }
+                        ;
                         break;
                     case BULLET_LOADED:
-                        Message = "use a stick to set the contents (put the item in offhand)";
-                        if (!itemstack.isEmpty()&&itemstack.getItem() == Items.STICK) {
-                            Message = "Ready to shoot";
-                            writeItemData(mainHandStack,"gun_State",gunState.READY);
-                            //itemstack.shrink(1);
-                            //player.containerMenu.broadcastChanges();
-                            player.displayClientMessage(Component.literal(Message),true);
-                            return InteractionResult.SUCCESS;
-                        };
-                        break;
 
-            }
-                player.displayClientMessage(Component.literal(Message),true);
+                        Message = "use a stick to set the contents (put the item in offhand)";
+                        writeItemData(mainHandStack, "gun_State", gunState.READY);
+                        if (!itemstack.isEmpty() && itemstack.getItem() == Items.STICK) {
+                            if (!level.isClientSide()) {
+                                Message = "Ready to shoot";
+
+                                //itemstack.shrink(1);
+                                //player.containerMenu.broadcastChanges();
+                                player.displayClientMessage(Component.literal(Message), true);
+
+                            }
+                            return InteractionResult.SUCCESS;
+                        }
+                        break;
+                    case READY:
+                        writeItemData(mainHandStack, "gun_State", gunState.UNLOADED);
+                        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                                SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0F, 2.0F);
+                        // 2. Projectile spawning logic must run safely on the logical server level
+                        if (level instanceof ServerLevel serverLevel) {
+                            // Instantiate the custom bullet using our DeferredHolder registry entry
+                            BulletEntity bullet = new BulletEntity(items.BULLET.get(), serverLevel);
+
+                            // Position the bullet right at the player's eye level
+                            bullet.setPos(player.getX(), player.getEyeY() - 0.1, player.getZ());
+                            bullet.setOwner(player); // Assign shooter so damage tracking knows who killed what
+
+                            // 3. Shoot behavior:
+                            // Arguments: (shooter, pitch, yaw, roll, velocity, inaccuracy)
+                            // Arrows usually have a velocity of 3.0F. Bullets should be blazing fast (e.g., 6.0F).
+                            bullet.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 6.0F, 0.5F);
+
+                            // Add the bullet to the world tick system
+                            serverLevel.addFreshEntity(bullet);
+                            mainHandStack.hurtAndBreak(1,player,InteractionHand.MAIN_HAND);
+
+
+                        }
+
+                        // 4. Client side bookkeeping (cooldowns & statistics)
+                        player.awardStat(Stats.ITEM_USED.get(this));
+
+                        return InteractionResult.SUCCESS;
+
+                }
+                player.displayClientMessage(Component.literal(Message), true);
 
                 //player.sendSystemMessage();
             }
 
 
         }
-
 
 
         // 2. ONLY send the chat message on the logical server side
