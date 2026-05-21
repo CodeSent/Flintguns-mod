@@ -2,6 +2,7 @@ package net.codesent.flintguns.features;
 
 import net.codesent.flintguns.FlintGuns;
 import net.codesent.flintguns.features.Entities.Projectilies.Bullet.BulletEntity;
+import net.codesent.flintguns.features.modItems.musket;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -25,9 +26,15 @@ public class items {
             () -> new flintlock(new Item.Properties().setId(ResourceKey.create(Registries.ITEM,Identifier.fromNamespaceAndPath(FlintGuns.MODID,"flintlock_gun"))).durability(1)));
     */
     public static final DeferredItem<flintlock> FlintlockItem = ITEMS.registerItem(
-            "flintlock_gun",
+            flintlock.itemID,
             flintlock::new,
             () -> new Item.Properties().durability(flintlock.durability)
+    );
+
+    public static final DeferredItem<flintlock> MusketItem = ITEMS.registerItem(
+            musket.itemID,
+            musket::new,
+            () -> new Item.Properties().durability(musket.durability)
     );
 
     public static final DeferredRegister.Entities  ENTITY_TYPES = DeferredRegister.createEntities(FlintGuns.MODID);

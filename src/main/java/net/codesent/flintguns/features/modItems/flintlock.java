@@ -50,14 +50,16 @@ enum gunState {
 
 public class flintlock extends Item {
 
-    private final Item propellant = Items.GUNPOWDER;
-    private final Item bullet = Items.IRON_NUGGET;
-    public  static final int  durability = 30;
+    private final Item  propellant = Items.GUNPOWDER;
+    private final Item  bullet = Items.IRON_NUGGET;
+    public static final int  durability = 30;
+    public static final String itemID = "flintlock_gun";
+    public static final float  shootVelocity = 8.0f;
 
     public flintlock(Item.Properties properties) {
 
         super(properties);
-        properties = properties.durability(durability);
+        //properties = properties.durability(durability);
 
     }
 
@@ -138,8 +140,9 @@ public class flintlock extends Item {
                     case BULLET_LOADED:
 
                         Message = "use a stick to set the contents (put the item in offhand)";
-                        writeItemData(mainHandStack, "gun_State", gunState.READY);
+
                         if (!itemstack.isEmpty() && itemstack.getItem() == Items.STICK) {
+                            writeItemData(mainHandStack, "gun_State", gunState.READY);
                             if (!level.isClientSide()) {
                                 Message = "Ready to shoot";
 
@@ -167,7 +170,7 @@ public class flintlock extends Item {
                             // 3. Shoot behavior:
                             // Arguments: (shooter, pitch, yaw, roll, velocity, inaccuracy)
                             // Arrows usually have a velocity of 3.0F. Bullets should be blazing fast (e.g., 6.0F).
-                            bullet.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 6.0F, 0.5F);
+                            bullet.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, shootVelocity, 0.5F);
 
                             // Add the bullet to the world tick system
                             serverLevel.addFreshEntity(bullet);

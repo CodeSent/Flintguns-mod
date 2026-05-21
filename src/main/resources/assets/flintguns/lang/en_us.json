@@ -8,6 +8,7 @@
   "flintguns.configuration.logDirtBlock": "Log Dirt Block",
   "flintguns.configuration.magicNumberIntroduction": "Magic Number Text",
   "flintguns.configuration.magicNumber": "Magic Number",
-  "item.flintguns.flintlock_gun" : "Flintlock gun",
+  "item.flintguns.flintlock_gun" : "Flintlock",
+  "item.flintguns.musket_gun" : "Musket",
   "creativetab.FlintGuns.Guns"   : "Flint Guns"
 }
