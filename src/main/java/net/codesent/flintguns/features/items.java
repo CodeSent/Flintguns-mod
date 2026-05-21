@@ -19,11 +19,19 @@ import java.util.function.Supplier;
 
 public class items {
     public static  final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FlintGuns.MODID);
-
+    /*
     public static final DeferredItem<flintlock> FlintlockItem = ITEMS.register(
             "flintlock_gun",
             () -> new flintlock(new Item.Properties().setId(ResourceKey.create(Registries.ITEM,Identifier.fromNamespaceAndPath(FlintGuns.MODID,"flintlock_gun"))).durability(1)));
+    */
+    public static final DeferredItem<flintlock> FlintlockItem = ITEMS.registerItem(
+            "flintlock_gun",
+            flintlock::new,
+            () -> new Item.Properties().durability(flintlock.durability)
+    );
+
     public static final DeferredRegister.Entities  ENTITY_TYPES = DeferredRegister.createEntities(FlintGuns.MODID);
+
 
     // Registers the entity type
     public static final Supplier<EntityType<BulletEntity>> BULLET =

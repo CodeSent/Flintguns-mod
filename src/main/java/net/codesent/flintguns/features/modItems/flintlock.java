@@ -5,7 +5,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
@@ -48,18 +47,23 @@ enum gunState {
 }
 
 
+
 public class flintlock extends Item {
+
+    private final Item propellant = Items.GUNPOWDER;
+    private final Item bullet = Items.IRON_NUGGET;
+    public  static final int  durability = 30;
 
     public flintlock(Item.Properties properties) {
 
         super(properties);
-        //properties = properties.durability(1);
+        properties = properties.durability(durability);
 
     }
 
+
     //private gunState currentState = gunState.UNLOADED;
-    private final Item proplent = Items.GUNPOWDER;
-    private final Item bullet = Items.IRON_NUGGET;
+
 
     private void writeItemData(ItemStack target, String data, gunState value) {
         target.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, CustomData ->
@@ -101,7 +105,7 @@ public class flintlock extends Item {
                 switch (readItemData(mainHandStack, "gun_State")) {
                     case UNLOADED:
                         Message = "load the Gun with Gunpowder (put the item in offhand.)";
-                        if (!itemstack.isEmpty() && itemstack.getItem() == proplent) {
+                        if (!itemstack.isEmpty() && itemstack.getItem() == propellant) {
                             writeItemData(mainHandStack, "gun_State", gunState.GUNPOWDER_LOADED);
                             if (!level.isClientSide()) {
                                 Message = "Gunpowder loaded";
@@ -167,8 +171,10 @@ public class flintlock extends Item {
 
                             // Add the bullet to the world tick system
                             serverLevel.addFreshEntity(bullet);
-                           // mainHandStack.hurtAndBreak(100,player, InteractionHand.MAIN_HAND);
-                            mainHandStack.hurtAndBreak(1,player,player.getEquipmentSlotForItem(mainHandStack));
+                             mainHandStack.hurtAndBreak(1,player, InteractionHand.MAIN_HAND);
+                            //mainHandStack.hurtAndBreak(1,player,player.getEquipmentSlotForItem(mainHandStack));
+
+
 
                         }
 
