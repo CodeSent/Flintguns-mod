@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0" : "flintguns:item/flintlock_gun_2d"
+  }
+
+}
