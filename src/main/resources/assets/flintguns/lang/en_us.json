@@ -10,5 +10,6 @@
   "flintguns.configuration.magicNumber": "Magic Number",
   "item.flintguns.flintlock_gun" : "Flintlock",
   "item.flintguns.musket_gun" : "Musket",
+  "item.flintguns.barrel" : "Barrel",
   "creativetab.FlintGuns.Guns"   : "Flint Guns"
 }

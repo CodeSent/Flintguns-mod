@@ -37,6 +37,12 @@ public class items {
             () -> new Item.Properties().durability(musket.durability)
     );
 
+    public static final DeferredItem<Item> BarrelItem = ITEMS.registerItem(
+            "barrel",
+            Item::new,
+            () -> new Item.Properties().stacksTo(64)
+    );
+
     public static final DeferredRegister.Entities  ENTITY_TYPES = DeferredRegister.createEntities(FlintGuns.MODID);
 
 

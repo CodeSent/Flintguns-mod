@@ -21,6 +21,7 @@ public class creativemodeTab {
                     .title(Component.translatable("creativetab.FlintGuns.Guns"))
                     .displayItems((itemDisplayParameters, output) -> {
                         output.accept(items.FlintlockItem);
+                        output.accept(items.BarrelItem);
                         output.accept(items.MusketItem);
                     }).build());
 

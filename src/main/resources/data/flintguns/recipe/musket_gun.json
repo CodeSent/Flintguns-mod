@@ -3,17 +3,17 @@
   "category": "misc",
   "pattern": [
     " AB",
-    " X ",
+    "XX ",
     " ##"
   ],
   "key": {
     "X": "flintguns:barrel",
-    "#": "#minecraft:planks",
+    "#": "#minecraft:logs_that_burn",
     "B": "minecraft:tripwire_hook",
     "A": "minecraft:flint"
   },
   "result": {
     "count": 1,
-    "id": "flintguns:flintlock_gun"
+    "id": "flintguns:musket_gun"
   }
 }

@@ -1,6 +1,7 @@
 package net.codesent.flintguns.features.modItems;
 
 import net.codesent.flintguns.features.Entities.Projectilies.Bullet.BulletEntity;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -103,6 +104,15 @@ public class flintlock extends Item {
    int getTotalPropellant() {
         return 1;
     }
+   float getDamageMultiplier() {
+        return dmgMultiplier;
+    }
+    int getParticleMultiplier() {
+        return 1;
+    }
+    float getVelocity() {
+        return shootVelocity;
+    }
 
     private int readItemData_int(ItemStack target, String dataName, int defValue) {
         CustomData data = target.get(DataComponents.CUSTOM_DATA);
@@ -132,11 +142,11 @@ public class flintlock extends Item {
             //ItemStack offhandStack = player.getOffhandItem(); // Explicitly gets offhand
             ItemStack itemstack = player.getOffhandItem();
             String Message = "";
-            if (!level.isClientSide()) {
+          //  if (!level.isClientSide()) {
                 switch (readItemData_gunState(mainHandStack, "gun_State")) {
                     case gunState.UNLOADED:
                         int cProp = readItemData_int(mainHandStack,"propellantLoaded",0);
-                        player.displayClientMessage(Component.literal("PropalentNeeded:"+ totalPropellant), false);
+                        //player.displayClientMessage(Component.literal("PropalentNeeded:"+ totalPropellant), false);
                         if (totalPropellant <= 1) {
                             Message = "load the Gun with Gunpowder (put the item in offhand.)";
 
@@ -157,6 +167,7 @@ public class flintlock extends Item {
                             }
 
                             writeItemData_int(mainHandStack,"propellantLoaded",cProp);
+                            if (level.isClientSide()) return InteractionResult.CONSUME;
                             return InteractionResult.SUCCESS;
                         }
                         break;
@@ -173,6 +184,7 @@ public class flintlock extends Item {
                                 player.displayClientMessage(Component.literal(Message), true);
 
                             }
+                            if (level.isClientSide()) return InteractionResult.CONSUME;
                             return InteractionResult.SUCCESS;
                         }
                         ;
@@ -191,6 +203,7 @@ public class flintlock extends Item {
                                 player.displayClientMessage(Component.literal(Message), true);
 
                             }
+                            if (level.isClientSide()) return InteractionResult.CONSUME;
                             return InteractionResult.SUCCESS;
                         }
                         break;
@@ -203,7 +216,19 @@ public class flintlock extends Item {
                         if (level instanceof ServerLevel serverLevel) {
                             // Instantiate the custom bullet using our DeferredHolder registry entry
                             BulletEntity bullet = new BulletEntity(items.BULLET.get(), serverLevel);
-                            bullet.getPersistentData().putFloat("dmgMultiplier",dmgMultiplier);
+                            bullet.getPersistentData().putFloat("dmgMultiplier",getDamageMultiplier());
+
+                            serverLevel.sendParticles(
+                                    ParticleTypes.LARGE_SMOKE,
+                                    player.getX(),
+                                    player.getY(0.5),
+                                    player.getZ(),
+                                    30*getParticleMultiplier(),
+                                    0.5,
+                                    0.5,
+                                    0.5,
+                                    0.01
+                            );
                             // Position the bullet right at the player's eye level
                             bullet.setPos(player.getX(), player.getEyeY() - 0.1, player.getZ());
                             bullet.setOwner(player); // Assign shooter so damage tracking knows who killed what
@@ -211,7 +236,7 @@ public class flintlock extends Item {
                             // 3. Shoot behavior:
                             // Arguments: (shooter, pitch, yaw, roll, velocity, inaccuracy)
                             // Arrows usually have a velocity of 3.0F. Bullets should be blazing fast (e.g., 6.0F).
-                            bullet.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, shootVelocity, 0.5F);
+                            bullet.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, getVelocity(), 0.5F);
 
                             // Add the bullet to the world tick system
                             serverLevel.addFreshEntity(bullet);
@@ -224,7 +249,7 @@ public class flintlock extends Item {
 
                         // 4. Client side bookkeeping (cooldowns & statistics)
                         player.awardStat(Stats.ITEM_USED.get(this));
-
+                        if (level.isClientSide()) return InteractionResult.CONSUME;
                         return InteractionResult.SUCCESS;
 
                 }
@@ -234,7 +259,7 @@ public class flintlock extends Item {
             }
 
 
-        }
+       // }
 
 
         // 2. ONLY send the chat message on the logical server side
@@ -243,6 +268,8 @@ public class flintlock extends Item {
         // 3. Return the 1.21.4 success result with the item stack attached
         return InteractionResult.PASS;
     }
+
+
 
 
 }
