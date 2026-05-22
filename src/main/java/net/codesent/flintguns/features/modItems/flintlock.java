@@ -50,12 +50,14 @@ enum gunState {
 
 public class flintlock extends Item {
 
-    private final Item  propellant = Items.GUNPOWDER;
-    private final Item  bullet = Items.IRON_NUGGET;
-    public static final int  durability = 30;
+    private final Item         propellant = Items.GUNPOWDER;
+    private final Item         bullet = Items.IRON_NUGGET;
+    public static final int    durability = 30;
     public static final String itemID = "flintlock_gun";
     public static final float  shootVelocity = 8.0f;
-
+    public static final float  dmgMultiplier = 1.0f;
+   //int                        totalPropellant= 1;
+    //static  int propellantNeeded =1;
     public flintlock(Item.Properties properties) {
 
         super(properties);
@@ -67,14 +69,14 @@ public class flintlock extends Item {
     //private gunState currentState = gunState.UNLOADED;
 
 
-    private void writeItemData(ItemStack target, String data, gunState value) {
+    private void writeItemData_gunState(ItemStack target, String data, gunState value) {
         target.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, CustomData ->
                 CustomData.update(compoundTag -> compoundTag.putInt(data, value.getId()))
         );
         //cPlayer.displayClientMessage(Component.literal("set Data:"+ data+ ", value:"+value.name()),false);
     }
 
-    private gunState readItemData(ItemStack target, String dataName) {
+    private gunState readItemData_gunState(ItemStack target, String dataName) {
         CustomData data = target.get(DataComponents.CUSTOM_DATA);
         //data.copyTag()
         gunState currentUsage = gunState.UNLOADED;
@@ -91,11 +93,38 @@ public class flintlock extends Item {
         return currentUsage;
     }
     //Player cPlayer;
+    private void writeItemData_int(ItemStack target, String data, int value) {
+        target.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, CustomData ->
+                CustomData.update(compoundTag -> compoundTag.putInt(data, value))
+        );
+        //cPlayer.displayClientMessage(Component.literal("set Data:"+ data+ ", value:"+value.name()),false);
+    }
+
+   int getTotalPropellant() {
+        return 1;
+    }
+
+    private int readItemData_int(ItemStack target, String dataName, int defValue) {
+        CustomData data = target.get(DataComponents.CUSTOM_DATA);
+        //data.copyTag()
+        int currentUsage = defValue;
+        if (data != null) {
+            CompoundTag nbtCopy = data.copyTag();
+
+            if (nbtCopy.contains(dataName)) {
+                Optional<Integer> optionalVal = nbtCopy.getInt(dataName);
+                currentUsage = optionalVal.orElse(defValue);
+            }
+        }
+        //cPlayer.displayClientMessage(Component.literal("read Data:"+ dataName + ", value:"+currentUsage.name()),false);
+        return currentUsage;
+    }
 
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack mainHandStack = player.getItemInHand(hand);
+        int totalPropellant = getTotalPropellant();
         //cPlayer = player;
         // FIX: Only run your logic if the current execution is evaluating the main hand,
         // but explicitly look at and shrink the OFFHAND stack.
@@ -104,11 +133,20 @@ public class flintlock extends Item {
             ItemStack itemstack = player.getOffhandItem();
             String Message = "";
             if (!level.isClientSide()) {
-                switch (readItemData(mainHandStack, "gun_State")) {
-                    case UNLOADED:
-                        Message = "load the Gun with Gunpowder (put the item in offhand.)";
+                switch (readItemData_gunState(mainHandStack, "gun_State")) {
+                    case gunState.UNLOADED:
+                        int cProp = readItemData_int(mainHandStack,"propellantLoaded",0);
+                        player.displayClientMessage(Component.literal("PropalentNeeded:"+ totalPropellant), false);
+                        if (totalPropellant <= 1) {
+                            Message = "load the Gun with Gunpowder (put the item in offhand.)";
+
+                        } else {
+                            Message = "load the Gun with Gunpowder ("+cProp+"/"+totalPropellant+") (put the item in offhand.)";
+                        }
+
                         if (!itemstack.isEmpty() && itemstack.getItem() == propellant) {
-                            writeItemData(mainHandStack, "gun_State", gunState.GUNPOWDER_LOADED);
+                            cProp++;
+                            if (cProp >= totalPropellant) writeItemData_gunState(mainHandStack, "gun_State", gunState.GUNPOWDER_LOADED);
                             if (!level.isClientSide()) {
                                 Message = "Gunpowder loaded";
 
@@ -117,6 +155,8 @@ public class flintlock extends Item {
                                 player.displayClientMessage(Component.literal(Message), true);
                                 //player.sendSystemMessage();
                             }
+
+                            writeItemData_int(mainHandStack,"propellantLoaded",cProp);
                             return InteractionResult.SUCCESS;
                         }
                         break;
@@ -124,7 +164,7 @@ public class flintlock extends Item {
 
                         Message = "load the Gun with a Iron Nugget (put the item in offhand)";
                         if (!itemstack.isEmpty() && itemstack.getItem() == bullet) {
-                            writeItemData(mainHandStack, "gun_State", gunState.BULLET_LOADED);
+                            writeItemData_gunState(mainHandStack, "gun_State", gunState.BULLET_LOADED);
                             if (!level.isClientSide()) {
                                 Message = "Bullet loaded";
 
@@ -142,7 +182,7 @@ public class flintlock extends Item {
                         Message = "use a stick to set the contents (put the item in offhand)";
 
                         if (!itemstack.isEmpty() && itemstack.getItem() == Items.STICK) {
-                            writeItemData(mainHandStack, "gun_State", gunState.READY);
+                            writeItemData_gunState(mainHandStack, "gun_State", gunState.READY);
                             if (!level.isClientSide()) {
                                 Message = "Ready to shoot";
 
@@ -155,14 +195,15 @@ public class flintlock extends Item {
                         }
                         break;
                     case READY:
-                        writeItemData(mainHandStack, "gun_State", gunState.UNLOADED);
+                        writeItemData_gunState(mainHandStack, "gun_State", gunState.UNLOADED);
                         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                                 SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0F, 2.0F);
+                        writeItemData_int(mainHandStack,"propellantLoaded",0);
                         // 2. Projectile spawning logic must run safely on the logical server level
                         if (level instanceof ServerLevel serverLevel) {
                             // Instantiate the custom bullet using our DeferredHolder registry entry
                             BulletEntity bullet = new BulletEntity(items.BULLET.get(), serverLevel);
-
+                            bullet.getPersistentData().putFloat("dmgMultiplier",dmgMultiplier);
                             // Position the bullet right at the player's eye level
                             bullet.setPos(player.getX(), player.getEyeY() - 0.1, player.getZ());
                             bullet.setOwner(player); // Assign shooter so damage tracking knows who killed what
@@ -202,4 +243,6 @@ public class flintlock extends Item {
         // 3. Return the 1.21.4 success result with the item stack attached
         return InteractionResult.PASS;
     }
+
+
 }

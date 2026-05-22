@@ -55,11 +55,11 @@ public class BulletEntity extends AbstractArrow {
         if (this.level() instanceof ServerLevel serverLevel) {
             Entity target = result.getEntity();
             Entity owner = this.getOwner();
-
+            float dmgMultiplier  = this.getPersistentData().getFloatOr("dmgMultiplier",1);
             DamageSource damageSource = this.damageSources().arrow(this, owner != null ? owner : this);
 
 
-            if (target.hurtServer(serverLevel,damageSource, damageAmount)) {
+            if (target.hurtServer(serverLevel,damageSource, damageAmount* dmgMultiplier)) {
                 // Optional: Apply vanilla arrow hit mechanics like enchantment effects or fire aspect
                 if (target instanceof LivingEntity livingTarget) {
                     this.doPostHurtEffects(livingTarget);

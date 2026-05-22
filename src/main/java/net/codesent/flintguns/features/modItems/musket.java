@@ -8,8 +8,9 @@ import org.jspecify.annotations.NonNull;
 public class musket  extends flintlock{
     public static final int  durability = 75;
     public static final String itemID = "musket_gun";
-    public static final float  shootVelocity = 15.0f;
-
+    public static final float  shootVelocity = 30.0f;
+    public static final float  dmgMultiplier = 10.0f;
+    int                        totalPropellant = 3;
     public musket(Properties properties) {
         super(properties);
     }
@@ -17,6 +18,11 @@ public class musket  extends flintlock{
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 72000;
+    }
+
+    @Override
+    int getTotalPropellant() {
+        return totalPropellant;
     }
 
     @Override
